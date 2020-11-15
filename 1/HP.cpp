@@ -375,7 +375,7 @@ public:
         if (this->isZero()) {
             HPfloat rhs_cp = rhs;
             rhs_cp.sign = !rhs_cp.sign;
-            return rhs;
+            return rhs_cp;
         }
         if (rhs.isInfinity()) {
             if (rhs.sign) {
