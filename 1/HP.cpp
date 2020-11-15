@@ -494,6 +494,27 @@ public:
         return *this;
     }
 
+    //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+    friend ostream& operator<<(ostream& out, const HPfloat value) {
+        if (!(value.sign)) {
+            out << '-';
+        }
+        out << value.digits[0] << '.' << value.digits.substr(1) << 'e' << value.exponent - 1;
+        return out;
+    }
+
+    //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+    friend istream& operator>>(istream& in, HPfloat& value) {
+        string value_str;
+        in >> value_str;
+        value = value_str;
+        return in;
+    }
+
+    //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 private:
     void construct(const string number_str);
     void move(string* digits, const size_t mov)const;
@@ -595,7 +616,7 @@ void HPfloat::print()const {
     if (!(this->sign)) {
         cout << '-';
     }
-    cout << "0." << this->digits << 'e' << exponent;
+    cout << this->digits[0] << '.' << this->digits.substr(1) << 'e' << this->exponent - 1;
 }
 
 void HPfloat::print(const size_t precision)const {
@@ -607,17 +628,17 @@ void HPfloat::print(const size_t precision)const {
         HPfloat round = round_str;
         HPfloat this_cp = *this;
         if (this->sign) {
-            this_cp = this_cp + round;
-            cout << "0." << this_cp.digits.substr(0, precision) << 'e' << this_cp.exponent;
+            this_cp += round;
+            cout << this_cp.digits[0] << "." << this_cp.digits.substr(0, precision) << 'e' << this_cp.exponent - 1;
         } else {
-            this_cp = this_cp - round;
-            cout << "-0." << this_cp.digits.substr(0, precision) << 'e' << this_cp.exponent;
+            this_cp -= round;
+            cout << '-' << this_cp.digits[0] << "." << this_cp.digits.substr(0, precision) << 'e' << this_cp.exponent - 1;
         }
     } else {
         if (!(this->sign)) {
             cout << '-';
         }
-        cout << "0." << this->digits.substr(0, precision) << 'e' << exponent;
+        cout << this->digits[0] << "." << this->digits.substr(0, precision) << 'e' << this->exponent - 1;
     }
 }
 
@@ -731,18 +752,25 @@ HPfloat HPfloat::construct_result_of_plus_minus(const HPfloat lhs, const HPfloat
 #pragma region Main
 
 int main() {
-    HPfloat a = 9.;
-    HPfloat b = 8.;
-    HPfloat c = 40.;
-    HPfloat d = 12.;
-    HPfloat e = 34.;
-    HPfloat f = a + b - c * d / e;
-    a.print();cout << endl;
-    b.print();cout << endl;
-    c.print();cout << endl;
-    d.print();cout << endl;
-    e.print();cout << endl;
-    f.print();cout << endl;
+    HPfloat a;
+    HPfloat b;
+    cout << "Please enter 2 values with " << HP_ENOBS << " significant digits:" << endl << "a = ";
+    cin >> a;
+    cout << "b = ";
+    cin >> b;
+    cout << endl;
+    cout << "  " << a << endl;
+    cout << "+ " << b << endl;
+    cout << "= " << a + b << endl << endl;
+    cout << "  " << a << endl;
+    cout << "- " << b << endl;
+    cout << "= " << a - b << endl << endl;
+    cout << "  " << a << endl;
+    cout << "* " << b << endl;
+    cout << "= " << a * b << endl << endl;
+    cout << "  " << a << endl;
+    cout << "/ " << b << endl;
+    cout << "= " << a / b << endl << endl;
     return 0;
 }
 
