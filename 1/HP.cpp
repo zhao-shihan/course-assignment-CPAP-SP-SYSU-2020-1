@@ -19,7 +19,7 @@ protected:
 
 private:
     string digitWise_single_multiply(const string lhs, const uint8_t rhs_digit)const;
-    string kill_zeros_and_copy(const string str)const;
+    string erase_zeros_and_copy(const string str)const;
     size_t align_with_zeros(string* plhs, string* prhs)const;
 };
 
@@ -31,8 +31,8 @@ HPbasicAlgorithm::~HPbasicAlgorithm() {}
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 string HPbasicAlgorithm::digitWise_plus(const string lhs, const string rhs)const {
-    string lhs_cp = kill_zeros_and_copy(lhs);
-    string rhs_cp = kill_zeros_and_copy(rhs);
+    string lhs_cp = erase_zeros_and_copy(lhs);
+    string rhs_cp = erase_zeros_and_copy(rhs);
     if (lhs_cp.empty()) {
         return rhs;
     }
@@ -67,8 +67,8 @@ string HPbasicAlgorithm::digitWise_plus(const string lhs, const string rhs)const
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 string HPbasicAlgorithm::digitWise_minus(const string lhs, const string rhs)const {
-    string lhs_cp = kill_zeros_and_copy(lhs);
-    string rhs_cp = kill_zeros_and_copy(rhs);
+    string lhs_cp = erase_zeros_and_copy(lhs);
+    string rhs_cp = erase_zeros_and_copy(rhs);
     if (rhs_cp.empty()) {
         return lhs;
     }
@@ -111,9 +111,7 @@ string HPbasicAlgorithm::digitWise_minus(const string lhs, const string rhs)cons
         }
         i++;
     }
-    if (result[0] == '0') {
-        result.erase(0, 1);
-    }
+    result = erase_zeros_and_copy(result);
     if (convert_sign) {
         result.push_back('-');
     }
@@ -136,8 +134,8 @@ string HPbasicAlgorithm::digitWise_single_multiply(const string lhs, const uint8
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 string HPbasicAlgorithm::digitWise_multiply(const string lhs, const string rhs)const {
-    string lhs_cp = kill_zeros_and_copy(lhs);
-    string rhs_cp = kill_zeros_and_copy(rhs);
+    string lhs_cp = erase_zeros_and_copy(lhs);
+    string rhs_cp = erase_zeros_and_copy(rhs);
     if (lhs_cp.empty() || rhs_cp.empty()) {
         return "";
     }
@@ -222,9 +220,12 @@ bool HPbasicAlgorithm::compare_boolean(const string lhs, const string rhs)const 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-string HPbasicAlgorithm::kill_zeros_and_copy(const string str)const {
+string HPbasicAlgorithm::erase_zeros_and_copy(const string str)const {
     string str_cp(str);
-    return str_cp.erase(0, str.find_first_not_of('0'));
+    while (str_cp[0] == '0') {
+        str_cp.erase(0, 1);
+    }
+    return str_cp;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -275,14 +276,15 @@ public:
     void print(const size_t precision)const;
     HPfloat get_zero()const;
     HPfloat get_zero(const bool sign)const;
-    bool zeroQ(const HPfloat value)const;
+    bool isZero()const;
     HPfloat get_infinity()const;
     HPfloat get_infinity(const bool sign)const;
-    bool infinityQ(const HPfloat value)const;
+    bool isInfinity()const;
 
     //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
     HPfloat& operator=(const double number_double) {
+        this->clear();
         stringstream ss;
         ss.precision(15);
         ss << number_double << flush;
@@ -292,6 +294,7 @@ public:
     }
 
     HPfloat& operator=(const float number_float) {
+        this->clear();
         stringstream ss;
         ss.precision(6);
         ss << number_float << flush;
@@ -301,11 +304,13 @@ public:
     }
 
     HPfloat& operator=(const string number_str) {
+        this->clear();
         construct(number_str);
         return *this;
     }
 
     HPfloat& operator=(const int64_t number_int) {
+        this->clear();
         stringstream ss;
         ss << number_int << flush;
         string number_str = ss.str();
@@ -334,20 +339,20 @@ public:
     //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
     HPfloat operator+(const HPfloat rhs)const {
-        if (zeroQ(rhs)) {
+        if (rhs.isZero()) {
             return *this;
         }
-        if (zeroQ(*this)) {
+        if (this->isZero()) {
             return rhs;
         }
-        if (infinityQ(rhs)) {
+        if (rhs.isInfinity()) {
             if (rhs.sign) {
                 return get_infinity();
             } else {
                 return get_infinity(false);
             }
         }
-        if (infinityQ(*this)) {
+        if (this->isInfinity()) {
             if (this->sign) {
                 return get_infinity();
             } else {
@@ -364,22 +369,22 @@ public:
         if (*this == rhs) {
             return get_zero();
         }
-        if (zeroQ(rhs)) {
+        if (rhs.isZero()) {
             return *this;
         }
-        if (zeroQ(*this)) {
+        if (this->isZero()) {
             HPfloat rhs_cp = rhs;
             rhs_cp.sign = !rhs_cp.sign;
             return rhs;
         }
-        if (infinityQ(rhs)) {
+        if (rhs.isInfinity()) {
             if (rhs.sign) {
                 return get_infinity(false);
             } else {
                 return get_infinity();
             }
         }
-        if (infinityQ(*this)) {
+        if (this->isInfinity()) {
             if (this->sign) {
                 return get_infinity();
             } else {
@@ -394,10 +399,10 @@ public:
 
     HPfloat operator*(const HPfloat rhs)const {
         bool result_sign = !(this->sign ^ rhs.sign);
-        if (zeroQ(*this) || zeroQ(rhs)) {
+        if (this->isZero() || rhs.isZero()) {
             return get_zero(result_sign);
         }
-        if (infinityQ(*this) || infinityQ(rhs)) {
+        if (this->isInfinity() || rhs.isInfinity()) {
             return get_infinity(result_sign);
         }
         if (*this == (string)"1") {
@@ -429,16 +434,16 @@ public:
             return (string)"1";
         }
         bool result_sign = !(this->sign ^ rhs.sign);
-        if (zeroQ(*this) && !zeroQ(rhs)) {
+        if (this->isZero() && !rhs.isZero()) {
             return get_zero(result_sign);
         }
-        if (!zeroQ(*this) && zeroQ(rhs)) {
+        if (!this->isZero() && rhs.isZero()) {
             return get_infinity(result_sign);
         }
-        if (infinityQ(*this) && !infinityQ(rhs)) {
+        if (this->isInfinity() && !rhs.isInfinity()) {
             return get_infinity(result_sign);
         }
-        if (!infinityQ(*this) && infinityQ(rhs)) {
+        if (!this->isInfinity() && rhs.isInfinity()) {
             return get_zero(result_sign);
         }
 
@@ -460,7 +465,7 @@ public:
                 lhs_cp.digits.push_back('0');
                 count++;
             }
-        } while (remainder != (string)"" && result_prev != result);
+        } while (count <= 50 && remainder != (string)"");
         result.exponent += this->exponent - rhs.exponent;
         result.sign = result_sign;
         return result;
@@ -497,6 +502,10 @@ public:
     //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
     friend ostream& operator<<(ostream& out, const HPfloat value) {
+        if (value.isZero()) {
+            out << "0." << value.digits.substr(1);
+            return out;
+        }
         if (!(value.sign)) {
             out << '-';
         }
@@ -516,11 +525,20 @@ public:
     //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 private:
+    void clear();
     void construct(const string number_str);
     void move(string* digits, const size_t mov)const;
     int16_t align(HPfloat* lhs, HPfloat* rhs)const;
     HPfloat construct_result_of_plus_minus(const HPfloat lhs, const HPfloat rhs, const bool symbol)const;
 };
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void HPfloat::clear() {
+    this->sign = true;
+    this->digits.clear();
+    this->exponent = INT16_MIN;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -613,6 +631,10 @@ HPfloat::~HPfloat() {}
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void HPfloat::print()const {
+    if (this->isZero()) {
+        cout << "0." << this->digits.substr(1);
+        return;
+    }
     if (!(this->sign)) {
         cout << '-';
     }
@@ -620,6 +642,10 @@ void HPfloat::print()const {
 }
 
 void HPfloat::print(const size_t precision)const {
+    if (this->isZero()) {
+        cout << "0." << this->digits.substr(1);
+        return;
+    }
     if (this->digits[precision] - 48 >= 5) {
         string round_str = "0.1e";
         stringstream ss;
@@ -657,9 +683,9 @@ HPfloat HPfloat::get_zero(const bool sign)const {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-bool HPfloat::zeroQ(const HPfloat value)const {
+bool HPfloat::isZero()const {
     string zero_digits(HP_ENOBS, '0');
-    return value.digits == zero_digits;
+    return this->digits == zero_digits;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -683,13 +709,13 @@ HPfloat HPfloat::get_infinity(const bool sign)const {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-bool HPfloat::infinityQ(const HPfloat value)const {
+bool HPfloat::isInfinity()const {
     HPfloat infinity = get_infinity();
-    if (value == infinity) {
+    if (*this == infinity) {
         return true;
     } else {
         infinity.sign = false;
-        if (value == infinity) {
+        if (*this == infinity) {
             return true;
         }
     }
@@ -752,8 +778,7 @@ HPfloat HPfloat::construct_result_of_plus_minus(const HPfloat lhs, const HPfloat
 #pragma region Main
 
 int main() {
-    HPfloat a;
-    HPfloat b;
+    HPfloat a, b;
     cout << "Please enter 2 values with " << HP_ENOBS << " significant digits:" << endl << "a = ";
     cin >> a;
     cout << "b = ";
