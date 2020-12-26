@@ -27,7 +27,7 @@ int main() {
     LinearNodes(a, b, x_interpolation);
 
     string file_name_head("linear_nodes_order");
-    for (size_t n = 11; n <= 31; n += 10) {
+    for (size_t n = 11; n <= 31; n += 5) {
         vector<double> x_sample(n);
         vector<double> y_sample(n);
         LinearNodes(a, b, x_sample);
@@ -40,7 +40,7 @@ int main() {
     }
 
     file_name_head = "Chebyshev_nodes_order";
-    for (size_t n = 11; n <= 31; n += 10) {
+    for (size_t n = 11; n <= 31; n += 5) {
         vector<double> x_sample(n);
         vector<double> y_sample(n);
         ChebyshevNodes(a, b, x_sample);
