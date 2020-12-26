@@ -4,7 +4,6 @@
 #include <cmath>
 #include <string>
 #include <sstream>
-#include "interpolation/interpolation.hh"
 using std::vector;
 using std::string;
 using std::stringstream;
@@ -14,6 +13,8 @@ inline double func(const double x);
 bool Discretize(double (*f)(double), const vector<double>& x_sample, vector<double>& y_sample);
 void LinearNodes(const double x_begin, const double x_end, vector<double>& x);
 void ChebyshevNodes(const double x_begin, const double x_end, vector<double>& x);
+bool InterpolationLagrange(const vector<double>& x_sample, const vector<double>& y_sample,
+    const vector<double>& x_interpolation, vector<double>& y_interpolation);
 bool OutputXY(const string& file_name, const vector<double>& x, const vector<double>& y);
 
 int main() {
@@ -25,15 +26,13 @@ int main() {
     vector<double> y_interpolation(n_plot);
     LinearNodes(a, b, x_interpolation);
 
-    Interpolation interpolation;
-
     string file_name_head("linear_nodes_order");
     for (size_t n = 11; n <= 31; n += 10) {
         vector<double> x_sample(n);
         vector<double> y_sample(n);
         LinearNodes(a, b, x_sample);
         Discretize(func, x_sample, y_sample);
-        interpolation.Lagrange(x_sample, y_sample, x_interpolation, y_interpolation);
+        InterpolationLagrange(x_sample, y_sample, x_interpolation, y_interpolation);
         stringstream ss;
         ss << n - 1 << std::flush;
         OutputXY(file_name_head + ss.str() + "_sample.csv", x_sample, y_sample);
@@ -46,7 +45,7 @@ int main() {
         vector<double> y_sample(n);
         ChebyshevNodes(a, b, x_sample);
         Discretize(func, x_sample, y_sample);
-        interpolation.Lagrange(x_sample, y_sample, x_interpolation, y_interpolation);
+        InterpolationLagrange(x_sample, y_sample, x_interpolation, y_interpolation);
         stringstream ss;
         ss << n - 1 << std::flush;
         OutputXY(file_name_head + ss.str() + "_sample.csv", x_sample, y_sample);
@@ -83,6 +82,28 @@ void ChebyshevNodes(const double x_begin, const double x_end, vector<double>& x)
         x[i] = _2_average + length * cos((i + 0.5) * M_PI / x.size());
         x[i] /= 2.0;
     }
+}
+
+bool InterpolationLagrange(const vector<double>& x_sample, const vector<double>& y_sample,
+    const vector<double>& x_interpolation, vector<double>& y_interpolation) {
+    if (x_sample.size() != y_sample.size() ||
+        x_interpolation.size() != y_interpolation.size()) {
+        return false;
+    }
+    for (size_t k = 0; k < x_interpolation.size(); ++k) {
+        y_interpolation[k] = 0.0;
+        for (size_t i = 0; i < x_sample.size(); ++i) {
+            double basis = 1.0;
+            for (size_t j = 0; j < i; ++j) {
+                basis *= (x_interpolation[k] - x_sample[j]) / (x_sample[i] - x_sample[j]);
+            }
+            for (size_t j = i + 1; j < x_sample.size(); ++j) {
+                basis *= (x_interpolation[k] - x_sample[j]) / (x_sample[i] - x_sample[j]);
+            }
+            y_interpolation[k] += y_sample[i] * basis;
+        }
+    }
+    return true;
 }
 
 bool OutputXY(const string& file_name, const vector<double>& x, const vector<double>& y) {
